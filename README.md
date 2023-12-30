@@ -119,7 +119,6 @@ npm install keycloak-angular keycloak-js --force
 ```bash
   2. security.guard.ts
 
-
 ```bash
 import { Injectable } from '@angular/core';
 import {
@@ -160,8 +159,7 @@ export class AuthGuard extends KeycloakAuthGuard {
 }
 
 
-
-
+3. app.module.ts
 export function KcFactory(KcService : KeycloakService){
  return ()=>{
    KcService.init({
@@ -178,5 +176,36 @@ export function KcFactory(KcService : KeycloakService){
  }
 }
 
+4. security.service.ts
 
+import {Injectable} from "@angular/core";
+import {KeycloakProfile} from "keycloak-js";
+import {KeycloakEventType, KeycloakService} from "keycloak-angular";
 
+@Injectable({providedIn : "root"})
+export class SecurityService {
+public profile? : KeycloakProfile;
+constructor (public kcService: KeycloakService) {
+  this.init();
+}
+init(){
+  this.kcService.keycloakEvents$.subscribe({
+    next: (e) => {
+      if (e.type == KeycloakEventType.OnAuthSuccess) {
+        this.kcService.loadUserProfile().then(profile=>{
+          this.profile=profile;
+        });
+      }
+    }
+  });
+}
+public hasRoleIn(roles:string[]):boolean{
+  let userRoles = this.kcService.getUserRoles();
+  for(let role of roles){
+    if (userRoles.includes(role)) return true;
+  } return false;
+}
+}
+
+Affichage
+ <img width="392" alt="image" src="https://github.com/OumaymaMHT123/Securite-DesSystemes-Distribues/assets/95369549/c6f42f71-5fdf-444a-a5b5-50bf4d9125f7">
